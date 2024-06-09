@@ -7,28 +7,47 @@
 
 Делать post-запрос я рекомендую с помощью Postman (https://www.postman.com/downloads/).
 """
+
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.views.decorators.http import require_POST
 
 from challenges.models import Book
 
 
 def create_book(title: str, author_full_name: str, isbn: str) -> Book:
-    # код писать тут
-    pass
+    return Book.objects.create(
+        title=title,
+        author_full_name=author_full_name,
+        isbn=isbn,
+    )
 
 
+@require_POST
 def create_book_handler(request: HttpRequest) -> HttpResponse:
-    title = request.POST.get("title")
-    author_full_name = request.POST.get("author_full_name")
-    isbn = request.POST.get("isbn")
-    if not all([title, author_full_name, isbn]):
+    title: str = request.POST.get("title", "")
+    author_full_name = request.POST.get("author_full_name", "")
+    isbn = request.POST.get("isbn", "")
+    print(request.POST)
+    if not any(
+        (
+            title,
+            author_full_name,
+            isbn,
+        )
+    ):
         return HttpResponseBadRequest("One of required parameters are missing")
 
-    book = create_book(title, author_full_name, isbn)
+    book: Book = create_book(
+        title=title,
+        author_full_name=author_full_name,
+        isbn=isbn,
+    )
 
-    return JsonResponse({
-        "id": book.pk,
-        "title": book.title,
-        "author_full_name": book.author_full_name,
-        "isbn": book.isbn,
-    })
+    return JsonResponse(
+        {
+            "id": book.pk,
+            "title": book.title,
+            "author_full_name": book.author_full_name,
+            "isbn": book.isbn,
+        }
+    )

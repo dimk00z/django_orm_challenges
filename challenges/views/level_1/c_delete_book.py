@@ -6,26 +6,36 @@
 После удаления книги попробуйте получить описание удалённой книги с помощью ручки из предыдущего задания
 и убедитесь, что книга удалена.
 """
-from django.http import HttpRequest, HttpResponse, HttpResponseNotFound, HttpResponseNotAllowed
+
+from http import HTTPStatus
+
+from django.http import (
+    HttpRequest,
+    HttpResponse,
+    HttpResponseNotAllowed,
+    HttpResponseNotFound,
+)
+from django.views.decorators.http import require_POST
 
 from challenges.models import Book
 from challenges.views.level_1.b_book_details import get_book
 
 
-def delete_book(book_id: int) -> None:
-    # код писать тут
-    pass
+def delete_book(book: Book) -> None:
+    book.delete()
 
 
-def delete_book_handler(request: HttpRequest, book_id: int) -> HttpResponse:
-    if request.method != "POST":
-        return HttpResponseNotAllowed(["POST"])
+@require_POST
+def delete_book_handler(
+    request: HttpRequest,
+    book_id: int,
+) -> HttpResponse:
 
     book = get_book(book_id)
 
     if book is None:
         return HttpResponseNotFound()
 
-    delete_book(book_id)
+    delete_book(book)
 
-    return HttpResponse()
+    return HttpResponse(status_code=HTTPStatus.NO_CONTENT)

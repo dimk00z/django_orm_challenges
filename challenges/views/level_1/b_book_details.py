@@ -9,25 +9,27 @@
 
 Сделать get-запрос вы можете как с помощью Postman, так и просто в браузере.
 """
-from django.http import HttpRequest, HttpResponse, JsonResponse, HttpResponseNotFound
+
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_GET
 
 from challenges.models import Book
 
 
-def get_book(book_id: int) -> Book | None:
-    # код писать тут
-    pass
+def get_book(book_id: int) -> Book:
+    return get_object_or_404(Book, pk=book_id)
 
 
+@require_GET
 def book_details_handler(request: HttpRequest, book_id: int) -> HttpResponse:
     book = get_book(book_id)
 
-    if book is None:
-        return HttpResponseNotFound()
-
-    return JsonResponse({
-        "id": book.pk,
-        "title": book.title,
-        "author_full_name": book.author_full_name,
-        "isbn": book.isbn,
-    })
+    return JsonResponse(
+        {
+            "id": book.pk,
+            "title": book.title,
+            "author_full_name": book.author_full_name,
+            "isbn": book.isbn,
+        }
+    )
